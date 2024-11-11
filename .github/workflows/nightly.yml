@@ -44,6 +44,7 @@ jobs:
           elif [[ "$(git log --since=1.days)" ]]; then
             echo "New commits found - Will do a release"
             echo "do_release=true" >> $GITHUB_ENV
+          fi
 
       - uses: actions/setup-java@v4
         if: ${{ env.do_release == 'true' }}
@@ -51,7 +52,6 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
           cache: 'gradle'
-          fi
 
       - name: "Build release apk"
         if: ${{ env.do_release == 'true' }}
