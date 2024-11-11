@@ -17,14 +17,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: '0'
-          ref: 'dev'
+          ref: 'refactor'
           token: ${{secrets.ACCESS_TOKEN}}
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'gradle'
 
       - name: "Determine next tag"
         id: tagger
@@ -40,15 +34,7 @@ jobs:
       - name: "Pull upstream"
         run: |
           git remote add upstream https://github.com/TeamNewPipe/NewPipe.git
-          git pull upstream dev
-
-      - name: "Build release apk"
-        run: >-
-          ./gradlew assembleRelease
-          --stacktrace
-          -DpackageSuffix=nightly
-          -DversionNameSuffix=-${{ steps.tagger.outputs.new_version_id }}-$(date -u '+%Y%m%d%H%M')
-          -DversionCodeOverride=${{ steps.tagger.outputs.new_version_id }}
+          git pull upstream refactor
 
       - name: "Checking if a release needs to be done"
         run : |
@@ -58,7 +44,23 @@ jobs:
           elif [[ "$(git log --since=1.days)" ]]; then
             echo "New commits found - Will do a release"
             echo "do_release=true" >> $GITHUB_ENV
-          fi 
+
+      - uses: actions/setup-java@v4
+        if: ${{ env.do_release == 'true' }}
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+          fi
+
+      - name: "Build release apk"
+        if: ${{ env.do_release == 'true' }}
+        run: >-
+          ./gradlew assembleRelease
+          --stacktrace
+          -DpackageSuffix=refactor.nightly
+          -DversionNameSuffix=-${{ steps.tagger.outputs.new_version_id }}-$(date -u '+%Y%m%d%H%M')
+          -DversionCodeOverride=${{ steps.tagger.outputs.new_version_id }}
 
       - name: "Tag commit"
         if: ${{ env.do_release == 'true' }}
@@ -69,7 +71,7 @@ jobs:
         uses: ad-m/github-push-action@v0.8.0
         with:
           github_token: ${{secrets.ACCESS_TOKEN}}
-          branch: dev
+          branch: refactor
 
       - name: "Sign release"
         if: ${{ env.do_release == 'true' }}
@@ -96,6 +98,6 @@ jobs:
         id: create_release
         with:
           tag_name: ${{ steps.tagger.outputs.new_tag }}
-          target_commitish: dev
+          target_commitish: refactor
           files: |
             ${{steps.rename_apk.outputs.apkFile}}
