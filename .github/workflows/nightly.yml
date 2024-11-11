@@ -13,12 +13,13 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: '0'
           ref: 'refactor'
-          token: ${{secrets.ACCESS_TOKEN}}
 
       - name: "Determine next tag"
         id: tagger
@@ -70,7 +71,6 @@ jobs:
         if: ${{ env.do_release == 'true' }}
         uses: ad-m/github-push-action@v0.8.0
         with:
-          github_token: ${{secrets.ACCESS_TOKEN}}
           branch: refactor
 
       - name: "Sign release"
