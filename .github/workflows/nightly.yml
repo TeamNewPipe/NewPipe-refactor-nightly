@@ -75,7 +75,7 @@ jobs:
 
       - name: "Sign release"
         if: ${{ env.do_release == 'true' }}
-        uses: ilharp/sign-android-release@v1
+        uses: ilharp/sign-android-release@d4c98d58d708ca2d2e6a3469b189a5c8260f2896
         id: sign_app
         with:
           releaseDir: app/build/outputs/apk/release
@@ -83,7 +83,9 @@ jobs:
           keyAlias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-          buildToolsVersion: 33.0.0
+          # Version shipped on GitHub's runners can be found at https://github.com/actions/runner-images
+          # Changelogs can be found at https://developer.android.com/tools/releases/platform-tools
+          buildToolsVersion: 35.0.1
 
       - name: "Rename apk"
         if: ${{ env.do_release == 'true' }}
